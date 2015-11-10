@@ -1,0 +1,103 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package dijkstra;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author mazenbadr
+ */
+public class Dijkstra {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        Hashtable<Integer, ArrayList<int[]>> graph = new Hashtable<>();
+        InputStream stream = ClassLoader.getSystemResourceAsStream("dijkstraData.txt");
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        try {
+            while ((line = buffer.readLine()) != null) {
+                String[] vals = line.trim().split("\\s+");
+                int key = -1;
+                ArrayList<int[]> values = new ArrayList<int[]>();
+
+                for (int i = 0; i < vals.length; i++) {
+                    int[] value = new int[2];
+                    if (i == 0) {
+                        key = Integer.parseInt(vals[i]);
+                    } else {
+                        String[] temp = vals[i].split(",");
+                        int j = 0;
+                        for (String s : temp) {
+                            value[j++] = Integer.parseInt(s);
+                        }
+                        values.add(value);
+                    }
+
+                }
+                graph.put(key, values);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Dijkstra.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Hashtable<Integer, ArrayList<Integer>> explored = new Hashtable<Integer, ArrayList<Integer>>();
+        ArrayList<Integer> source = new ArrayList<>();
+        source.add(0);
+        explored.put(1,source);
+        int[] distances = new int[graph.size() + 1];
+        for (int i = 0; i < distances.length; i++) {
+            distances[i] = Integer.MAX_VALUE;
+        }
+        distances[1] = 0;
+        int currentNode = 1;
+        int prevNode = 1;
+        while (explored.size() < graph.size()) {
+            prevNode = currentNode;
+            ArrayList<Integer> childeren = new ArrayList<Integer>();
+            int min = Integer.MAX_VALUE;
+            int distance = 0;
+            int nextNode = -1;
+            for (int edge : explored.keySet()) {
+                for (int[] child : graph.get(edge)) {
+                    if (!explored.get(edge).contains(child[0])) {
+                        if (distances[edge] + child[1] < distances[child[0]]) {
+                            distance = distances[prevNode] + child[1];
+                            distances[child[0]] = distance;
+                            nextNode = child[0];
+                        }
+                    }
+                }
+            }
+            if (nextNode != -1) {
+                distances[nextNode] = distance;
+                ArrayList<Integer> temp = new ArrayList<>();
+                temp.add(currentNode);
+                temp.add(nextNode);
+                explored.put(currentNode, temp);
+            }
+            prevNode = currentNode;
+            currentNode = nextNode;
+
+//            explored.get(currentNode).add(nextNode);
+        }
+        for (int dist : distances) {
+            System.out.println(dist);
+        }
+    }
+
+}
